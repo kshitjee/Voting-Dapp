@@ -1,0 +1,22 @@
+.item {
+  height: 150px;
+  width: 200px;
+  background-color: black;
+  margin: 10px;
+  border: solid lightblue;
+  border-width: 5px;
+}
+
+.content {
+  font-size: small;
+  text-align: center;
+  color: white;
+}
+.content h3 {
+  font-size: medium;
+  color: lightblue;
+}
+
+.actions {
+  text-align: center;
+}
