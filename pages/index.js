@@ -1,53 +1,40 @@
-import { useEffect, useState } from "react";
 import BallotGrid from "../components/ballots/ballotGrid";
 import styles from "../styles/Home.module.css";
 import Link from "next/link";
+import { MongoClient } from "mongodb";
 
-var DUMMY_BALLOTS = [
-  {
-    id: "1",
-    title: "Biden vs Trump",
-    description: "Vote for your next president!",
-  },
-  {
-    id: "2",
-    title: "MBDTF vs Graduation",
-    description: "Vote for your favourite Kanye Album!",
-  },
-  {
-    id: "3",
-    title: "MBDTF vs Graduation",
-    description: "Vote for your favourite Kanye Album!",
-  },
-  {
-    id: "4",
-    title: "MBDTF vs Graduation",
-    description: "Vote for your favourite Kanye Album!",
-  },
-  {
-    id: "5",
-    title: "MBDTF vs Graduation",
-    description: "Vote for your favourite Kanye Album!",
-  },
-  {
-    id: "6",
-    title: "MBDTF vs Graduation",
-    description: "Vote for your favourite Kanye Album!",
-  },
-];
-export default function Home() {
-  const [loadedBallots, setLoadedBallots] = useState([]);
-  useEffect(() => {
-    // send http request and fetch data
-    setLoadedBallots(DUMMY_BALLOTS);
-  }, []);
+export default function Home(props) {
   return (
     <div>
       <h1 className={styles.title}>VOTING DAPP</h1>
-      <BallotGrid ballots={loadedBallots} />
+      <BallotGrid ballots={props.ballots} />
       <Link href="/new-ballot">
         <button className={styles.button}>ADD NEW BALLOT</button>
       </Link>
     </div>
   );
+}
+
+export async function getStaticProps() {
+  const client = await MongoClient.connect(
+    "mongodb+srv://kshitij_chakravarty:" +
+      String(process.env.MONGO_PASSWORD) +
+      "@cluster0.ldj4x.mongodb.net/ballots?retryWrites=true&w=majority"
+  );
+  const db = client.db();
+  const ballotsCollection = db.collection("ballots");
+  const ballots = await ballotsCollection.find().toArray();
+
+  client.close();
+
+  return {
+    props: {
+      ballots: ballots.map((ballot) => ({
+        title: ballot.data.title,
+        description: ballot.data.description,
+        id: String(ballot._id),
+      })),
+    },
+    revalidate: 1,
+  };
 }
